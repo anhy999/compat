@@ -1,9 +1,11 @@
 <pre class="metadata">
 Group: WHATWG
+Status: RD
+Date: 2022-12-19
 H1: Compatibility
 Shortname: compat
 Text Macro: TWITTER compatstandard
-Text Macro: LATESTRD 2023-06
+Text Macro: LATESTRD 2022-12
 Abstract: This standard describes a collection of web platform features that web browsers need to support for compatibility with the de facto web.
 Translation: ja https://triple-underscore.github.io/compat-ja.html
 Indent: 2
@@ -15,7 +17,7 @@ urlPrefix: https://w3c.github.io/screen-orientation/;
   type: interface
     text: ScreenOrientation; url: #screenorientation-interface
   type: dfn
-    text: current orientation angle; url: #dfn-current-orientation-angle
+    text: update the orientation information; url: #dfn-update-the-orientation-information
 urlPrefix: https://www.w3.org/TR/CSS/; spec: CSS2
   type: dfn
     text: vendor prefix; url: #vendor-prefix
@@ -56,20 +58,12 @@ urlPrefix: https://drafts.csswg.org/css-values-3/
 
 <pre class=link-defaults>
 spec:css-animations-1; type:property; text:animation-delay
-spec:css-borders-4; type:property; text:box-shadow
-spec:css-borders-4; type:property; text:border-radius
-spec:css-borders-4; type:property; text:border-bottom-left-radius
-spec:css-borders-4; type:property; text:border-bottom-right-radius
-spec:css-borders-4; type:property; text:border-top-left-radius
-spec:css-borders-4; type:property; text:border-top-right-radius
 spec:css-conditional-3; type:at-rule; text:@media
 spec:css-display-3; type:value; for:display; text:flex
 spec:css-flexbox-1; type:value; text:inline-flex
-spec:css-syntax-3; type:dfn; text:invalid
 spec:filter-effects-1; type:property; text:filter
 spec:infra; type:dfn; text:user agent
 spec:svg2; type:dfn; text:fill
-spec:svg2; type:dfn; text:stroke
 </pre>
 
 <!-- Commented out until we know what the heck to put here:
@@ -681,9 +675,7 @@ Media: visual
 Animation type: See individual properties
 </pre>
 
-The '-webkit-text-stroke' property is a shorthand property
-for the '-webkit-text-stroke-width' and '-webkit-text-stroke-color' properties,
-for setting the [=stroke=] width and
+The '-webkit-text-stroke' property is a shorthand property for setting the [=stroke=] width and
 [=stroke=] color of an element's text.
 
 <div class="example" id="example-webkit-text-stroke">
@@ -703,7 +695,7 @@ effect.
 }
 </pre>
 
-The element <pre>&lt;p class="stroked-text-longhand"&gt;Serious typography&lt;/p&gt;</pre> would be
+The element <pre>&ltp class="stroked-text-longhand"&gt;Serious typography&lt;/p&gt;</pre> would be
 rendered as follows:
 
 <img width="381" height="116" src="stroked-text.png" alt="image of stroked text">
@@ -786,9 +778,9 @@ compatibility with the web.</div>
   <a attribute lt="orientation"><code>window.orientation</code></a> angle
 </h4>
 
-The possible integer values for the <a attribute lt="orientation"><code>window.orientation</code></a>
-angle are: <code>-90</code>, <code>0</code>, <code>90</code>, <code>180</code>. User agents must
-support the <code>-90</code>, <code>0</code> and <code>90</code> values and may optionally support
+The possible values for the <a attribute lt="orientation"><code>window.orientation</code></a> angle
+are: <code>-90</code>, <code>0</code>, <code>90</code>, <code>180</code>. User agents must support
+the <code>-90</code>, <code>0</code> and <code>90</code> values and may optionally support
 <code>180</code>.
 
 <p class="note">
@@ -802,12 +794,15 @@ In order to determine the current <a attribute lt="orientation"><code>window.ori
 angle, the user agent must run the following steps:
 
 <ol>
-  <li>Let |orientationAngle| be the <a>current orientation angle</a>.
+  <li>Return the result of step 3 of the {{ScreenOrientation}}'s
+  <a>update the orientation information</a> algorithm with the following changes:
     <ol>
-      <li>If |orientationAngle| is less than 180, return |orientationAngle|.
-      <li>If |orientationAngle| is 180, and the [=user agent=] supports that value, return
-          |orientationAngle|, else return 0.
-      <li>If |orientationAngle| is greater than 180, return |orientationAngle| - 360.
+      <li>If the orientation angle is less than or equal to 180, return the orientation angle
+      <li>If the orientation angle is greater than 180, return the orientation angle - 360.
+      <li>If the resulting orientation angle is 180 and the user agent does not support that value,
+      return 0.
+      <!-- This is what Windows phone, some iPhones running various iOSes, and Chrome Mobile do on
+      some of my test Androids. It's possible something else happens! -->
     </ol>
   </li>
 </ol>
@@ -836,6 +831,12 @@ supported on all {{Window}} objects and <code><{body}></code> elements as attrib
   </tbody>
 </table>
 
+<div class="XXX">
+  WebKit also has this on
+  <a href="https://github.com/WebKit/webkit/blob/e455672f9e6861ced85d8be01cb7bc03a30a0555/LayoutTests/fast/dom/event-handler-attributes.html#L335">HTMLFrameSetElement</a>.
+  It's unclear if this is needed for compatibility.
+</div>
+
 <h2 id="ua-string-section">The User-Agent String</h2>
 
 The <code>User-Agent</code> header field syntax is formally defined by [[!HTTP-SEMANTICS]] and
@@ -853,8 +854,8 @@ begins with an opening bracket "<" and ends with a closing ">" bracket, e.g.,
 
 A User-Agent <dfn>constant</dfn> is a <a>string</a> whose value does not change.
 
-When a <a>token</a>'s value is made up from one or more <a>tokens</a>, and optionally
-<a>constants</a>, it is said to <dfn>decompose</dfn> to those <a>tokens</a> and <a>constants</a>.
+When a <a>token</a>'s value is made up from other <a>tokens</a>, and optionally <a>constants</a>, it
+is said to <dfn>decompose</dfn> to those <a>tokens</a> and <a>constants</a>.
 
 <h4 id="ua-string-token-reference">User-Agent Token Reference</h4>
 
@@ -867,7 +868,7 @@ This is a non-exhaustive list of common User-Agent <a>tokens</a>.
   </thead>
   <tbody>
     <tr>
-      <td><code>&lt;<dfn export>deviceCompat</dfn>&gt;</code></td>
+      <td><code>&lt;<dfn>deviceCompat</dfn>&gt;</code></td>
       <td>Represents the form-factor of the device. Primarily this is "<code>Mobile </code>", or
       just the empty string, for Desktop or non-mobile devices. Some browsers have also sent token
       values such as "<code>Tablet</code>", "<code>TV</code>", "<code>Mobile VR</code>", etc., or
@@ -905,21 +906,29 @@ one or more [=tokens=] representing browser information.
 
 <h4 id="ua-string-pattern-chrome">Chrome User-Agent pattern</h4>
 
-"<code>Mozilla/5.0 (&lt;<a>unifiedPlatform</a>&gt;)
+"<code>Mozilla/5.0 (&lt;<a>chromePlatform</a>&gt;)
 AppleWebKit/537.36 (KHTML, like Gecko) Chrome/&lt;<a>majorVersion</a>&gt;.0.0.0
 &lt;<a for="/">deviceCompat</a>&gt;Safari/537.36</code>"
 
 <div class="example" id="chrome-ua-examples">
-  <strong>Desktop</strong>: "<code>Mozilla/5.0 (<mark>Macintosh;
-  Intel Mac OS X 10_15_7</mark>) AppleWebKit/537.36 (KHTML, like Gecko)
-  Chrome/<mark>110</mark>.0.0.0 Safari/537.36</code>"
+  <strong>Desktop</strong>: "<code>Mozilla/5.0 (<mark>Macintosh</mark>;
+  <mark>Intel Mac OS X 10_15_7</mark>) AppleWebKit/537.36 (KHTML, like Gecko)
+  Chrome/<mark>102</mark>.0.0.0 Safari/537.36</code>"
 
-  <strong>Mobile</strong>: "<code>Mozilla/5.0 (<mark>Linux; Android 10; K</mark>) AppleWebKit/537.36
-  (KHTML, like Gecko) Chrome/<mark>110</mark>.0.0.0 <mark>Mobile</mark>
+  <strong>Mobile</strong>: "<code>Mozilla/5.0 (<mark>Linux</mark>; Android <mark>11</mark>;
+  <mark>Pixel 4a (5G)</mark>) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/<mark>102</mark>.0.0.0
+  <mark>Mobile</mark>
   Safari/537.36</code>"
 </div>
 
 <h4 id="ua-string-tokens-chrome">Chrome-specific tokens</h4>
+
+<code>&lt;<dfn>chromePlatform</dfn>&gt;</code> <a>decomposes</a> to the following:
+
+On desktop platforms, "<code>&lt;<a>platform</a>&gt;; &lt;<a>oscpu</a>&gt;</code>".
+
+On Chrome for Android, "<code>&lt;<a>platform</a>&gt;; Android &lt;<a for=chrome>androidVersion</a>&gt;;
+&lt;<a>deviceModel</a>&gt;</code>".
 
 <table>
   <thead>
@@ -928,16 +937,12 @@ AppleWebKit/537.36 (KHTML, like Gecko) Chrome/&lt;<a>majorVersion</a>&gt;.0.0.0
   </thead>
   <tbody>
     <tr>
-      <td><code>&lt;<dfn for=chrome>unifiedPlatform</dfn>&gt;</code></td>
-      <td>Per-platform [=constant=] that is one of the following values:
-
-      "<code>Linux; Android 10; K</code>"<br>
-      "<code>Windows NT 10.0; Win64; x64</code>"<br>
-      "<code>Macintosh; Intel Mac OS X 10_15_7"<br>
-      "<code>X11; Linux x86_64</code>"<br>
-      "<code>X11; CrOS x86_64 14541.0.0</code>"<br>
-      "<code>Fuchsia</code>"<br>
-      </td>
+      <td><code>&lt;<dfn for=chrome>androidVersion</dfn>&gt;</code></td>
+      <td>Represents the Android version, e.g., <code>"11"</code>.</td>
+    </tr>
+    <tr>
+      <td><code>&lt;<dfn for=chrome>deviceModel</dfn>&gt;</code></td>
+      <td>Represents an Android device model, e.g., "<code>SM-A205U</code>".</td>
     </tr>
   </tbody>
 </table>
